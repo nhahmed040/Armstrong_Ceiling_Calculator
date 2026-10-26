@@ -2,6 +2,8 @@ name: Build Ceiling and Floor Calculator APK
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main, master]
 
 permissions:
   contents: read
@@ -20,23 +22,41 @@ jobs:
           java-version: '17'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          log-accepted-android-sdk-licenses: false
+
+      - name: Extract project ZIP if needed
+        shell: bash
+        run: |
+          if [ ! -f "CeilingFloorCalculator/app/build.gradle" ] && [ ! -f "CeilingFloorCalculator/app/build.gradle.kts" ]; then
+            ZIP_FILE="$(find . -maxdepth 1 -type f -iname '*.zip' -print -quit)"
+            if [ -z "$ZIP_FILE" ]; then
+              echo "Could not find the CeilingFloorCalculator project folder or a ZIP file in the repository root."
+              echo "Upload CeilingFloorCalculator_Android_Project.zip to the repository root, or upload the extracted project folder."
+              exit 1
+            fi
+            unzip -o "$ZIP_FILE" -d .
+          fi
+          if [ ! -f "CeilingFloorCalculator/app/build.gradle" ] && [ ! -f "CeilingFloorCalculator/app/build.gradle.kts" ]; then
+            echo "Expected app Gradle build file was not found at CeilingFloorCalculator/app/."
+            find . -maxdepth 4 -type f \( -name build.gradle -o -name build.gradle.kts \) -print
+            exit 1
+          fi
 
       - name: Install Android SDK packages
-        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+        run: sdkmanager --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
-      - name: Extract Android project ZIP
-        run: unzip -q CeilingFloorCalculator_Android_Project.zip -d .
-
       - name: Build debug APK
-        run: gradle --no-daemon -p CeilingFloorCalculator assembleDebug
+        working-directory: CeilingFloorCalculator
+        run: gradle --no-daemon assembleDebug
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: CeilingFloorCalculator-debug-apk
