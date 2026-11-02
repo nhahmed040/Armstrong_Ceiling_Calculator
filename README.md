@@ -1,0 +1,1 @@
+Armstrong ceiling calculator with Balanced Centered and Corner Bound grid alignment options. The selected strategy updates the live plan drawing and is included in CSV/PDF reports. APK build/install has not been tested in this environment.
