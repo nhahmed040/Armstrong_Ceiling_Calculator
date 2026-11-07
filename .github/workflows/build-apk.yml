@@ -1,74 +1,31 @@
-name: Build Armstrong Ceiling Calculator APK
+name: Inspect Original Armstrong Ceiling Calculator Project
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main, master]
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  inspect:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v4
-
-      - name: Verify native Android project
+      - name: Inspect original Version 5.4 ZIP
         shell: bash
         run: |
           set -e
-          PROJECT_DIR="$GITHUB_WORKSPACE/android-app"
-
-          if [ ! -f "$PROJECT_DIR/app/build.gradle" ] && [ ! -f "$PROJECT_DIR/app/build.gradle.kts" ]; then
-            echo "ERROR: Native Android app Gradle file not found at android-app/app."
-            echo "Repository files:"
-            find "$GITHUB_WORKSPACE" -maxdepth 4 -type f -name 'build.gradle*' -print
-            exit 1
-          fi
-
-          echo "Building native project at: $PROJECT_DIR"
-          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
-
-      - name: Install Android SDK packages
-        run: |
-          sdkmanager --install \
-            "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0"
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
-
-      - name: Build debug APK
-        shell: bash
-        run: |
-          set -e
-          cd "$PROJECT_DIR"
-
-          if [ -f "./gradlew" ]; then
-            chmod +x ./gradlew
-            ./gradlew --no-daemon assembleDebug
-          else
-            gradle --no-daemon assembleDebug
-          fi
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Armstrong-Ceiling-Calculator-debug-apk
-          path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
+          ARCHIVE="$GITHUB_WORKSPACE/Armstrong_Ceiling_Calculator_Version_5_4_Dimensions_Pan_Zoom.zip"
+          test -f "$ARCHIVE"
+          echo "=== ARCHIVE DETAILS ==="
+          ls -lh "$ARCHIVE"
+          echo "=== ARCHIVE FILE LIST ==="
+          unzip -l "$ARCHIVE"
+          mkdir -p "$RUNNER_TEMP/original-project"
+          unzip -q "$ARCHIVE" -d "$RUNNER_TEMP/original-project"
+          echo "=== PROJECT TREE ==="
+          find "$RUNNER_TEMP/original-project" -maxdepth 5 -type f | sort
+          echo "=== BUILD CONFIGURATION FILES ==="
+          find "$RUNNER_TEMP/original-project" -type f \\( -name 'settings.gradle' -o -name 'settings.gradle.kts' -o -name 'build.gradle' -o -name 'build.gradle.kts' -o -name 'gradlew' -o -name 'package.json' \\) -print
