@@ -143,7 +143,8 @@ class PlanView(context:android.content.Context):View(context) {
     override fun onDraw(c:Canvas){
         super.onDraw(c);c.drawColor(Color.rgb(250,251,253))
         val unit=min((width-90f).toDouble()/w,(height-90f).toDouble()/l).coerceAtLeast(1.0).toFloat()
-        val left=(width-w*unit)/2f+panX;val top=(height-l*unit)/2f+panY
+        val left=(width-w.toFloat()*unit)/2f+panX
+        val top=(height-l.toFloat()*unit)/2f+panY
         c.save();c.translate(left,top);c.scale(zoom,zoom)
         val wp=(w*unit).toFloat();val hp=(l*unit).toFloat()
         c.drawColor(Color.WHITE);c.drawRect(0f,0f,wp,hp,wall)
