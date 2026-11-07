@@ -65,11 +65,11 @@ jobs:
               raise SystemExit("Old perimeter green-tee drawing rule is still present")
           if "bayWidth>.600001" not in html or "leftEdgeGreen=first>.600001?1:0" not in html:
               raise SystemExit("Correct 600 mm plus remainder perimeter rule is missing")
-          if "Armstrong Ceiling Calculator" not in html:
-              raise SystemExit("Original calculator branding is missing")
-          print("Original calculator HTML and corrected internal-only tee rule verified.")
-          PY
-          node --check /tmp/armstrong-app.js
+          if "rightEdgeGreen=rightEdge>.600001?1:0" not in html:
+              raise SystemExit("Right perimeter 600 mm plus remainder rule is missing")
+          if "Armstrong Ceiling Calculator" not in html or "gridSvg" not in html:
+              raise SystemExit("Original calculator branding or plan view is missing")
+          print("Original calculator asset and corrected 600 mm plus remainder edge rule verified.")
 
       - name: Build original Android WebView project
         working-directory: ArmstrongCeilingCalculator
