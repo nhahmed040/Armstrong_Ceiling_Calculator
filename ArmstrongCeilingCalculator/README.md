@@ -1,15 +1,16 @@
-# Armstrong Ceiling Calculator — Version 5.3
+# Armstrong Ceiling Calculator — Version 5.5
 
 Android WebView application for Armstrong 600 × 600 mm ceiling layout and material estimating.
 
-## Version 5.3 updates — Grid edge-bay correction and smart material optimization
+## Version 5.5 updates — Layout/takeoff consistency and edge-bay correction
 - Adds room-by-room cutting plans for 3.6 m main-runner stock and 3.0 m wall-angle stock (editable in Settings).
 - Reuses suitable offcuts within the same room before transferring remaining reusable offcuts to later rooms.
 - Separates same-room reuse, cross-room reuse, reusable offcuts and scrap; offcuts shorter than 300 mm are treated as scrap.
 - Applies the configured saw kerf when a cut leaves a remainder.
 - Uses optimized new-stock bar counts for the plan requirement and additional-material comparison.
 - Shows room cut segments and stock-bar details in the Materials tab; includes optimization totals in PDF and CSV exports.
-- Corrects the grid edge-bay rule: green 600 mm cross tees appear only in internal 1,200 mm bays, never in either perimeter bay, and the Materials count follows the same rule.
+- Uses one shared room-grid geometry for the plan drawing and material takeoff, so main-runner and cross-tee counts follow the visible layout.
+- Keeps 600 mm modules at the perimeter: when an edge bay exceeds 600 mm, place the 600 mm tee from the nearest main runner and leave the remainder at the wall; omit the tee when the edge bay is 600 mm or narrower.
 - Reports scrap generated within each room as well as the project-wide total.
 - Preserves the Version 5 settings menu, 600 × 600 mm board size, two grid alignment modes, live plan and package-costing basis.
 
@@ -22,8 +23,8 @@ Upload the contents of the `ArmstrongCeilingCalculator` folder to the GitHub rep
 The JavaScript syntax and ZIP integrity are checked before delivery. A remote Android build and physical-device test are not performed here; run the GitHub Actions workflow to build the APK, then test this new version on your phone.
 
 
-## Version 5.3 grid rule update
+## Version 5.5 grid rule update
 - 1200 mm cross-tee stations are drawn across each main-runner bay.
-- 600 mm green tees complete internal bays and are also added in either perimeter bay when its measured edge opening is 600 mm or less.
-- The 600 mm tee quantity is calculated from the same bay eligibility rule used by the drawing.
+- 600 mm green tees complete internal bays; edge bays wider than 600 mm retain a 600 mm module with any remainder left at the perimeter.
+- The plan and takeoff share the same generated tee positions and bay segmentation.
 - Both Balanced Centered and Corner Bound layouts use the same connection rules, with their own edge measurements.
