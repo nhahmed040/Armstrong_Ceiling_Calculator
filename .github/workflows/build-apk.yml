@@ -1,33 +1,43 @@
-name: Inspect Original Armstrong Ceiling Calculator Project
+name: Recover Original Armstrong Ceiling Calculator Source
 
 on:
   workflow_dispatch:
   push:
     branches: [main, master]
+    paths:
+      - '.github/workflows/build-apk.yml'
+      - 'Armstrong_Ceiling_Calculator_Version_5_4_Dimensions_Pan_Zoom.zip'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  inspect:
+  recover:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Inspect original Version 5.4 ZIP
+      - name: Extract original project into repository
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
           ARCHIVE="$GITHUB_WORKSPACE/Armstrong_Ceiling_Calculator_Version_5_4_Dimensions_Pan_Zoom.zip"
           test -f "$ARCHIVE"
-          echo "=== ARCHIVE DETAILS ==="
-          ls -lh "$ARCHIVE"
-          echo "=== ARCHIVE FILE LIST ==="
-          unzip -l "$ARCHIVE"
-          mkdir -p "$RUNNER_TEMP/original-project"
-          unzip -q "$ARCHIVE" -d "$RUNNER_TEMP/original-project"
-          echo "=== PROJECT TREE ==="
-          find "$RUNNER_TEMP/original-project" -maxdepth 5 -type f | sort
-          echo "=== BUILD CONFIGURATION FILES ==="
-          find "$RUNNER_TEMP/original-project" -type f \\( -name 'settings.gradle' -o -name 'settings.gradle.kts' -o -name 'build.gradle' -o -name 'build.gradle.kts' -o -name 'gradlew' -o -name 'package.json' \\) -print
+          unzip -q "$ARCHIVE" -d "$RUNNER_TEMP/recovered"
+          test -f "$RUNNER_TEMP/recovered/ArmstrongCeilingCalculator/app/src/main/assets/index.html"
+          rm -rf "$GITHUB_WORKSPACE/ArmstrongCeilingCalculator"
+          cp -a "$RUNNER_TEMP/recovered/ArmstrongCeilingCalculator" "$GITHUB_WORKSPACE/ArmstrongCeilingCalculator"
+          echo "=== ORIGINAL PROJECT FILES ==="
+          find ArmstrongCeilingCalculator -type f | sort
+          echo "=== ORIGINAL WEB APP SIZE ==="
+          wc -l ArmstrongCeilingCalculator/app/src/main/assets/index.html
+          git add ArmstrongCeilingCalculator
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Recover original Version 5.4 Android project source"
+            git push
+          fi
