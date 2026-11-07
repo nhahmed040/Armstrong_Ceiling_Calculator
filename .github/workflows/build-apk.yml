@@ -47,10 +47,10 @@ jobs:
           if not scripts:
               raise SystemExit("No application JavaScript found")
           Path("/tmp/armstrong-app.js").write_text("\\n".join(scripts))
-          if "leftEdgeGreen" in html or "rightEdgeGreen" in html:
-              raise SystemExit("Old perimeter green-tee rule is still present")
           if "if(!isPerimeter||bayWidth<=.600001)" in html:
               raise SystemExit("Old perimeter green-tee drawing rule is still present")
+          if "bayWidth>.600001" not in html or "leftEdgeGreen=first>.600001?1:0" not in html:
+              raise SystemExit("Correct 600 mm plus remainder perimeter rule is missing")
           if "Armstrong Ceiling Calculator" not in html:
               raise SystemExit("Original calculator branding is missing")
           print("Original calculator HTML and corrected internal-only tee rule verified.")
