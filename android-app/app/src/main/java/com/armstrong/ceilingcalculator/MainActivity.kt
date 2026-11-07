@@ -71,7 +71,7 @@ class MainActivity : Activity() {
         typeface=Typeface.create("sans-serif-medium",Typeface.NORMAL)
     }
     private fun field(v:String,h:String)=EditText(this).apply {
-        setText(v); hint=h; textSize=13f; singleLine=true
+        setText(v); hint=h; textSize=13f; setSingleLine(true)
         inputType=InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
         setPadding(6,4,6,4)
     }
@@ -142,7 +142,7 @@ class PlanView(context:android.content.Context):View(context) {
     fun reset(){zoom=1f;panX=0f;panY=0f;invalidate()}
     override fun onDraw(c:Canvas){
         super.onDraw(c);c.drawColor(Color.rgb(250,251,253))
-        val unit=min((width-90f)/w,(height-90f)/l).coerceAtLeast(1f)
+        val unit=min((width-90f).toDouble()/w,(height-90f).toDouble()/l).coerceAtLeast(1.0).toFloat()
         val left=(width-w*unit)/2f+panX;val top=(height-l*unit)/2f+panY
         c.save();c.translate(left,top);c.scale(zoom,zoom)
         val wp=(w*unit).toFloat();val hp=(l*unit).toFloat()
