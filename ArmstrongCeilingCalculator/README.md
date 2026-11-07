@@ -18,9 +18,9 @@ Android WebView application for Armstrong 600 × 600 mm ceiling layout and mater
 The 2,100 ETB/m² rate remains the complete ceiling package (boards plus standard market-ratio grid allowances). Only grid quantities above the included allowance are priced separately. Market allowances continue to round to the nearest whole unit.
 
 ## Build APK
-Upload the contents of the `ArmstrongCeilingCalculator` folder to the GitHub repository root, then run **Build Android APK** under Actions (or push to `main`/`master`). Download the `Armstrong-Ceiling-Calculator-APK` artifact after the workflow succeeds.
+The repository workflow builds the updated `ArmstrongCeilingCalculator` source directory directly; it does not extract or build the archived V5.4 ZIP. Push to `main`/`master` or run the workflow manually, then download the `Armstrong-Ceiling-Calculator-v5.5-APK` artifact.
 
-The JavaScript syntax and ZIP integrity are checked before delivery. A remote Android build and physical-device test are not performed here; run the GitHub Actions workflow to build the APK, then test this new version on your phone.
+The embedded JavaScript syntax was checked after the V5.5 changes. The Android APK must still complete the GitHub Actions build and then be installed and tested on a phone.
 
 
 ## Version 5.5 grid rule update
