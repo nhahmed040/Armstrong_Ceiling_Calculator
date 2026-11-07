@@ -35,14 +35,14 @@ jobs:
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Locate V5.5 Android project source
+      - name: Locate V5.6 Android project source
         id: project
         shell: bash
         run: |
           set -euo pipefail
           PROJECT_DIR="ArmstrongCeilingCalculator"
           if [[ ! -f "$PROJECT_DIR/settings.gradle" || ! -f "$PROJECT_DIR/app/build.gradle" || ! -f "$PROJECT_DIR/app/src/main/assets/index.html" ]]; then
-            echo "::error::V5.5 Android source project is incomplete."
+            echo "::error::V5.6 Android source project is incomplete."
             find . -maxdepth 5 -type f | sort | head -150
             exit 1
           fi
@@ -56,7 +56,7 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build APK from updated V5.5 source project
+      - name: Build APK from updated V5.6 source project
         shell: bash
         env:
           PROJECT_DIR: ${{ steps.project.outputs.project_dir }}
@@ -77,12 +77,12 @@ jobs:
             exit 1
           fi
           mkdir -p output
-          cp "$APK" output/Armstrong_Ceiling_Calculator_v5.5.apk
-          ls -lh output/Armstrong_Ceiling_Calculator_v5.5.apk
+          cp "$APK" output/Armstrong_Ceiling_Calculator_v5.6.apk
+          ls -lh output/Armstrong_Ceiling_Calculator_v5.6.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Armstrong-Ceiling-Calculator-v5.5-APK
-          path: output/Armstrong_Ceiling_Calculator_v5.5.apk
+          name: Armstrong-Ceiling-Calculator-v5.6-APK
+          path: output/Armstrong_Ceiling_Calculator_v5.6.apk
           if-no-files-found: error
