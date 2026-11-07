@@ -10,12 +10,17 @@ import android.print.PrintDocumentAdapter;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.webkit.WebChromeClient;
+import android.webkit.ConsoleMessage;
+import android.util.Log;
 import android.widget.Toast;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import android.util.Base64;
 
 public class MainActivity extends Activity {
+    private static final String TAG = "ArmstrongCeiling";
     private static final int CREATE_CSV_FILE = 7001;
     private String pendingCsv = "";
     private WebView web;
@@ -26,6 +31,16 @@ public class MainActivity extends Activity {
         WebSettings settings = web.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(true);
+        settings.setJavaScriptCanOpenWindowsAutomatically(false);
+        web.setWebViewClient(new WebViewClient());
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override public boolean onConsoleMessage(ConsoleMessage message) {
+                Log.e(TAG, message.message() + " -- line " + message.lineNumber());
+                return true;
+            }
+        });
         web.setBackgroundColor(0xFFF4F6F2);
         web.addJavascriptInterface(new ExportBridge(), "AndroidExport");
         setContentView(web);
