@@ -2,6 +2,8 @@ name: Inspect Original Armstrong Ceiling Calculator Project
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main, master]
 
 permissions:
   contents: read
