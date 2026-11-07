@@ -76,7 +76,7 @@ h1,h2,h3,.section,.roomhead,.metric strong,.result b,.btn,.nav-item{font-family:
  const first=alignmentMode==="centered"?(r.w-(mainCount-1)*spacing)/2:Math.min(spacing,Math.max(0,r.w-(mainCount-1)*spacing));
  const mainYs=Array.from({length:mainCount},(_,i)=>first+i*spacing).filter(y=>y>1e-6&&y<r.w-1e-6);
  const bayYs=[0,...mainYs,r.w],bayWidths=bayYs.slice(1).map((y,i)=>y-bayYs[i]);
- const teeXs=grid.teeXs;
+ const teeXs=[];for(let x=.6;x<r.l-1e-6;x+=.6)teeXs.push(x);
  const shortRows=[];
  for(let i=0;i<bayWidths.length;i++){
   const width=bayWidths[i],isLeft=i===0,isRight=i===bayWidths.length-1;
