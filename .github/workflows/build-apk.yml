@@ -74,10 +74,10 @@ jobs:
             if (start < 0 || end < 0) throw new Error('Missing testable function: ' + name);
             return js.slice(start, end);
           };
-          const mainRows = sliceBetween('mainRows', '\\nfunction hangerPositionsForRun');
-          const geometry = sliceBetween('roomGridGeometry', '\\nfunction enablePlanGestures');
-          const cutting = sliceBetween('optimizeCutsByRoom', '\\nfunction zoomPlan');
-          const make = new Function('alignmentMode', mainRows + '\\n' + geometry + '\\n' + cutting + '\\nreturn {mainRows, roomGridGeometry, optimizeCutsByRoom};');
+          const mainRows = sliceBetween('mainRows', '\nfunction hangerPositionsForRun');
+          const geometry = sliceBetween('roomGridGeometry', '\nfunction enablePlanGestures');
+          const cutting = sliceBetween('optimizeCutsByRoom', '\nfunction zoomPlan');
+          const make = new Function('alignmentMode', mainRows + '\n' + geometry + '\n' + cutting + '\nreturn {mainRows, roomGridGeometry, optimizeCutsByRoom};');
           for (const mode of ['centered', 'corner']) {
             const api = make(mode);
             const grid = api.roomGridGeometry({l: 5.4, w: 5.6});
