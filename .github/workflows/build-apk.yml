@@ -55,12 +55,10 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
           source = Path('ArmstrongCeilingCalculator/app/src/main/assets/index.html').read_text()
-          scripts = re.findall(r'<script>([\\s\\S]*?)</script>', source)
-          if not scripts:
-              raise SystemExit('No embedded application script found')
-          Path('/tmp/armstrong-calculator.js').write_text('\\n'.join(scripts))
+          start = source.index('<script>') + len('<script>')
+          end = source.index('</script>', start)
+          Path('/tmp/armstrong-calculator.js').write_text(source[start:end])
           PY
           node --check /tmp/armstrong-calculator.js
 
