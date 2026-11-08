@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
                     if (printManager == null) throw new Exception("Android print service is unavailable");
                     web.evaluateJavascript("preparePrintReport();", value -> {
                         try {
-                            String jobName = "Ceiling_Floor_Calculator_Report";
+                            String jobName = "Armstrong_Ceiling_Calculator_Report";
                             PrintDocumentAdapter adapter = web.createPrintDocumentAdapter(jobName);
                             PrintAttributes attributes = new PrintAttributes.Builder()
                                     .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
