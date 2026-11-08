@@ -7,7 +7,7 @@ android {
         applicationId 'com.example.ceilingfloorcalculator'
         minSdk 23
         targetSdk 35
-        versionCode 18
-        versionName '6.4'
+        versionCode 19
+        versionName '6.4.1'
     }
 }
