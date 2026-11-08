@@ -140,7 +140,16 @@ function optimizeCutsByRoom(roomCuts,stockLength,kerf,minReusable=.30){
   reusable.forEach(b=>projectPool.push(b));
   const roomCutLength=(room.cuts||[]).reduce((a,b)=>a+b,0);totalCutLength+=roomCutLength;
   roomsOut.push({name:room.name||`Room ${roomIndex+1}`,stocks:localBins.length,sameRoomReuse,otherRoomReuse,reusableCount:reusable.length,reusableLength,scrap:roomScrap,
-   runs:(room.cuts||[]).length,cutLength:roomCutLength,assignments,bars:localBins.map(b=>({originRoom:b.originRoom,remaining:b.remaining,cuts:b.cuts.map(c=>c.length),reusable:b.remaining>=minReusable-1e-7&&!b.scrap}))});
+   runs:(room.cuts||[]).length,cutLength:roomCutLength,assignments,_bins:localBins});
+ });
+ // Rebuild room-level offcut figures after every room has had a chance to reuse
+ // transferred stock. This prevents earlier rooms showing stale pre-transfer remnants.
+ roomsOut.forEach(room=>{
+  const finalReusable=room._bins.filter(b=>b.remaining>=minReusable-1e-7&&!b.scrap);
+  room.reusableCount=finalReusable.length;
+  room.reusableLength=finalReusable.reduce((sum,b)=>sum+b.remaining,0);
+  room.bars=room._bins.map(b=>({originRoom:b.originRoom,remaining:b.remaining,cuts:b.cuts.map(c=>c.length),reusable:b.remaining>=minReusable-1e-7&&!b.scrap}));
+  delete room._bins;
  });
  const reusableOffcuts=projectPool.filter(b=>b.remaining>=minReusable-1e-7&&!b.scrap);
  return {stocks:totalStocks,cutLength:totalCutLength,rooms:roomsOut,reusableCount:reusableOffcuts.length,reusableLength:reusableOffcuts.reduce((a,b)=>a+b.remaining,0),scrap:totalScrap,sameRoomReuse:roomsOut.reduce((a,r)=>a+r.sameRoomReuse,0),otherRoomReuse:roomsOut.reduce((a,r)=>a+r.otherRoomReuse,0),minReusable};
