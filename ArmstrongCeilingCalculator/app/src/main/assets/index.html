@@ -225,7 +225,7 @@ function setInputListeners(){['boardsPerBox','ceilingRate','priceRunner','priceA
 }
 function setAlignment(mode){alignmentMode=mode;const centered=$("alignCentered"),corner=$("alignCorner");centered.classList.toggle("active",mode==="centered");corner.classList.toggle("active",mode==="corner");centered.setAttribute("aria-pressed",String(mode==="centered"));corner.setAttribute("aria-pressed",String(mode==="corner"));$("alignmentNote").textContent=mode==="centered"?"Main runners are balanced across the width; the 600 mm grid modules are centred along the room length with equal end margins.":"Main runners and 600 mm grid modules start from the selected wall-angle reference; the opposite edge bay may differ.";calculate()}$("alignCentered").addEventListener("click",()=>setAlignment("centered"));$("alignCorner").addEventListener("click",()=>setAlignment("corner"));$('openSettings').addEventListener('click',()=>{$('settingsMenu').open=false;$('settingsDialog').showModal()});$('closeSettings').addEventListener('click',()=> $('settingsDialog').close());$('settingsDialog').addEventListener('click',e=>{if(e.target===$('settingsDialog'))$('settingsDialog').close()});document.addEventListener('click',e=>{const menu=document.querySelector('.settings-menu');if(menu&&!menu.contains(e.target))menu.open=false});
 // Persistent device storage: projects and shared defaults survive app restarts.
-const PROJECTS_KEY="armstrongCeiling.projects.v1",ACTIVE_KEY="armstrongCeiling.activeProject.v1",SETTINGS_KEY="armstrongCeiling.settings.v1";
+const PROJECTS_KEY="armstrongCeiling.projects.v1",ACTIVE_KEY="armstrongCeiling.activeProject.v1",SETTINGS_KEY="armstrongCeiling.settings.v1",DRAFT_KEY="armstrongCeiling.draft.v1";
 const settingIds=["boardsPerBox","ceilingRate","priceRunner","priceAngle","priceTee12","priceTee6","marketRunnerFactor","marketAngleFactor","marketTee12Factor","marketTee6Factor","runnerStock","angleStock","hangerSpacing","hangerSetback","cutKerf"];
 const layerIds=["showMain","showTee12","showTee6","showWall","showHangers"];
 let savedProjects=[],activeProjectId=null,storageAvailable=true,saveTimer=null;
@@ -238,7 +238,7 @@ function applyLayers(data){if(!data)return;layerIds.forEach(id=>{if(data[id]!==u
 function projectSnapshot(){return {rooms:rooms.map(r=>({l:Number(r.l),w:Number(r.w)})),alignmentMode,settings:readSettings(),layers:readLayers(),updatedAt:new Date().toISOString()}}
 function saveProjectsStore(){return safeWrite(PROJECTS_KEY,savedProjects)}
 function persistCurrentProject(){
- const snap=projectSnapshot();safeWrite(SETTINGS_KEY,snap.settings);
+ const snap=projectSnapshot();safeWrite(DRAFT_KEY,snap);safeWrite(SETTINGS_KEY,snap.settings);
  if(activeProjectId){const p=savedProjects.find(x=>x.id===activeProjectId);if(p){Object.assign(p,snap);saveProjectsStore()}}
 }
 function scheduleAutoSave(){clearTimeout(saveTimer);saveTimer=setTimeout(persistCurrentProject,180)}
@@ -265,7 +265,7 @@ function initProjectStorage(){
  savedProjects=safeRead(PROJECTS_KEY,[]);if(!Array.isArray(savedProjects))savedProjects=[];
  const globalSettings=safeRead(SETTINGS_KEY,null);if(globalSettings)applySettings(globalSettings);
  const active=safeRead(ACTIVE_KEY,null),current=savedProjects.find(p=>p.id===active);
- if(current){loadProject(current.id)}else{activeProjectId=null;renderRooms();calculate()}
+ if(current){loadProject(current.id)}else{activeProjectId=null;const draft=safeRead(DRAFT_KEY,null);if(draft){if(Array.isArray(draft.rooms)&&draft.rooms.length)rooms=draft.rooms.map(r=>({l:r.l,w:r.w}));alignmentMode=draft.alignmentMode==="corner"?"corner":"centered";applySettings(draft.settings||globalSettings||{});applyLayers(draft.layers||{});}renderRooms();setAlignment(alignmentMode);calculate()}
  renderProjectList();$("projectStorageNote").textContent=storageAvailable?"Saved projects stay on this device. Use Export backup to move them to another phone.":"Device storage is unavailable; use Export backup where possible.";
 }
 $("openProjects").addEventListener("click",()=>{$("settingsMenu").open=false;$("projectName").value=savedProjects.find(p=>p.id===activeProjectId)?.name||"";renderProjectList();$("projectsDialog").showModal()});
