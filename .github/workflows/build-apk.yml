@@ -61,6 +61,45 @@ jobs:
           Path('/tmp/armstrong-calculator.js').write_text(source[start:end])
           PY
           node --check /tmp/armstrong-calculator.js
+          node - <<'JS'
+          const fs = require('fs');
+          const assert = require('assert');
+          const source = fs.readFileSync('ArmstrongCeilingCalculator/app/src/main/assets/index.html', 'utf8');
+          const scriptStart = source.indexOf('<script>') + 8;
+          const scriptEnd = source.indexOf('</script>', scriptStart);
+          const js = source.slice(scriptStart, scriptEnd);
+          const sliceBetween = (name, next) => {
+            const start = js.indexOf('function ' + name + '(');
+            const end = js.indexOf(next, start);
+            if (start < 0 || end < 0) throw new Error('Missing testable function: ' + name);
+            return js.slice(start, end);
+          };
+          const mainRows = sliceBetween('mainRows', '\\nfunction hangerPositionsForRun');
+          const geometry = sliceBetween('roomGridGeometry', '\\nfunction enablePlanGestures');
+          const cutting = sliceBetween('optimizeCutsByRoom', '\\nfunction zoomPlan');
+          const make = new Function('alignmentMode', mainRows + '\\n' + geometry + '\\n' + cutting + '\\nreturn {mainRows, roomGridGeometry, optimizeCutsByRoom};');
+          for (const mode of ['centered', 'corner']) {
+            const api = make(mode);
+            const grid = api.roomGridGeometry({l: 5.4, w: 5.6});
+            assert.strictEqual(api.mainRows(5.6), 4);
+            assert.strictEqual(grid.teeXs.length, 8);
+            assert.strictEqual(grid.shortRows.length, 5);
+            assert.strictEqual(grid.shortRows.length * Math.ceil(5.4 / .6 - 1e-9), 45);
+            if (mode === 'corner') {
+              const lastBay = grid.bayWidths[grid.bayWidths.length - 1];
+              const lastTee = grid.shortRows[grid.shortRows.length - 1];
+              const lastMain = grid.mainYs[grid.mainYs.length - 1];
+              assert(Math.abs(lastBay - .8) < 1e-8);
+              assert(Math.abs(lastTee - lastMain - .6) < 1e-8);
+              assert(Math.abs(lastBay - .6 - .2) < 1e-8);
+            }
+          }
+          const api = make('corner');
+          const cuts = api.optimizeCutsByRoom([{name:'Room 1',cuts:[2,2]},{name:'Room 2',cuts:[1]}], 3.6, .003);
+          assert.strictEqual(cuts.stocks, 2);
+          assert.strictEqual(cuts.otherRoomReuse, 1);
+          console.log('Geometry and offcut-reuse smoke tests passed');
+          JS
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
