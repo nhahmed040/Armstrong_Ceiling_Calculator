@@ -7,8 +7,8 @@ android {
         applicationId 'com.example.armstrongceilingcalculator'
         minSdk 23
         targetSdk 35
-        versionCode 26
-        versionName '9'
+        versionCode 27
+        versionName '10'
     }
 
     signingConfigs {
