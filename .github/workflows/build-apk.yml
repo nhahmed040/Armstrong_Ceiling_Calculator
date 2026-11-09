@@ -35,19 +35,19 @@ jobs:
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Locate V7 Android project source
+      - name: Locate V8 Android project source
         id: project
         shell: bash
         run: |
           set -euo pipefail
           PROJECT_DIR="ArmstrongCeilingCalculator"
           if [[ ! -f "$PROJECT_DIR/settings.gradle" || ! -f "$PROJECT_DIR/app/build.gradle" || ! -f "$PROJECT_DIR/app/src/main/assets/index.html" ]]; then
-            echo "::error::V7 Android source project is incomplete."
+            echo "::error::V8 Android source project is incomplete."
             find . -maxdepth 5 -type f | sort | head -150
             exit 1
           fi
           echo "project_dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
-          echo "Building updated source project directly (not the archived V5.4 ZIP)."
+          echo "Building the current source project directly."
           grep -E "versionCode|versionName" "$PROJECT_DIR/app/build.gradle"
           find "$PROJECT_DIR" -maxdepth 3 -type f | sort | head -100
 
@@ -148,11 +148,11 @@ jobs:
           fi
           mkdir -p output
           cp "$APK" output/Armstrong_Ceiling_Calculator_v8.apk
-          ls -lh output/Armstrong_Ceiling_Calculator_v7.apk
+          ls -lh output/Armstrong_Ceiling_Calculator_v8.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: Armstrong-Ceiling-Calculator-v8-APK
-          path: output/Armstrong_Ceiling_Calculator_v7.apk
+          path: output/Armstrong_Ceiling_Calculator_v8.apk
           if-no-files-found: error
