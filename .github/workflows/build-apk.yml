@@ -1,4 +1,4 @@
-name: Build Armstrong Ceiling Calculator APK from source
+name: Build signed Armstrong Ceiling Calculator APK from source
 
 on:
   workflow_dispatch:
@@ -101,18 +101,38 @@ jobs:
           console.log('Geometry and offcut-reuse smoke tests passed');
           JS
 
+      - name: Prepare persistent Android release signing key
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$KEYSTORE_BASE64" || -z "$KEYSTORE_PASSWORD" || -z "$KEY_ALIAS" || -z "$KEY_PASSWORD" ]]; then
+            echo "::error::Release signing is not configured. Add the four ANDROID_* repository Actions secrets before building/installing APKs."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$GITHUB_WORKSPACE/ArmstrongCeilingCalculator/app/release.keystore"
+          test -s "$GITHUB_WORKSPACE/ArmstrongCeilingCalculator/app/release.keystore"
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
-      - name: Build APK from updated V7 source project
+      - name: Build signed APK from updated V8 source project
         shell: bash
         env:
           PROJECT_DIR: ${{ steps.project.outputs.project_dir }}
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/ArmstrongCeilingCalculator/app/release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          gradle --no-daemon --stacktrace -p "$PROJECT_DIR" clean assembleDebug
+          gradle --no-daemon --stacktrace -p "$PROJECT_DIR" clean assembleRelease
 
       - name: Verify and rename APK
         shell: bash
@@ -120,19 +140,19 @@ jobs:
           PROJECT_DIR: ${{ steps.project.outputs.project_dir }}
         run: |
           set -euo pipefail
-          APK="$PROJECT_DIR/app/build/outputs/apk/debug/app-debug.apk"
+          APK="$PROJECT_DIR/app/build/outputs/apk/release/app-release.apk"
           if [[ ! -s "$APK" ]]; then
             echo "::error::APK was not created at $APK"
             find "$PROJECT_DIR" -path '*/build/outputs/apk/*' -type f -print
             exit 1
           fi
           mkdir -p output
-          cp "$APK" output/Armstrong_Ceiling_Calculator_v7.apk
+          cp "$APK" output/Armstrong_Ceiling_Calculator_v8.apk
           ls -lh output/Armstrong_Ceiling_Calculator_v7.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Armstrong-Ceiling-Calculator-v7-APK
+          name: Armstrong-Ceiling-Calculator-v8-APK
           path: output/Armstrong_Ceiling_Calculator_v7.apk
           if-no-files-found: error
