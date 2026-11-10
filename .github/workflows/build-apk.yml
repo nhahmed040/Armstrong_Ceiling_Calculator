@@ -40,14 +40,14 @@ jobs:
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Locate V11 Android project source
+      - name: Locate V12 Android project source
         id: project
         shell: bash
         run: |
           set -euo pipefail
           PROJECT_DIR="ArmstrongCeilingCalculator"
           if [[ ! -f "$PROJECT_DIR/settings.gradle" || ! -f "$PROJECT_DIR/app/build.gradle" || ! -f "$PROJECT_DIR/app/src/main/assets/index.html" ]]; then
-            echo "::error::V11 Android source project is incomplete."
+            echo "::error::V12 Android source project is incomplete."
             find . -maxdepth 5 -type f | sort | head -150
             exit 1
           fi
@@ -82,7 +82,7 @@ jobs:
           const mainRows = sliceBetween('mainRows', '\nfunction hangerPositionsForRun');
           const geometry = sliceBetween('roomGridGeometry', '\nfunction enablePlanGestures');
           const cutting = sliceBetween('optimizeCutsByRoom', '\nfunction zoomPlan');
-          const make = new Function('alignmentMode', mainRows + '\n' + geometry + '\n' + cutting + '\nreturn {mainRows, roomGridGeometry, optimizeCutsByRoom};');
+          const make = new Function('alignmentMode', mainRows + '\n' + geometry + '\n' + cutting + '\nreturn {mainRows, roomGridGeometry, optimizeCutsByRoom, optimizeCrossTeeCutsByRoom};');
           for (const mode of ['centered', 'corner']) {
             const api = make(mode);
             const grid = api.roomGridGeometry({l: 5.4, w: 5.6});
@@ -103,7 +103,17 @@ jobs:
           const cuts = api.optimizeCutsByRoom([{name:'Room 1',cuts:[2,2]},{name:'Room 2',cuts:[1]}], 3.6, .003);
           assert.strictEqual(cuts.stocks, 2);
           assert.strictEqual(cuts.otherRoomReuse, 1);
-          console.log('Geometry and offcut-reuse smoke tests passed');
+          const cornerApi = make('corner');
+          const cornerGrid = cornerApi.roomGridGeometry({l:5.4,w:5.6});
+          const physicalSegments = [...cornerGrid.teeXs.flatMap(() => cornerGrid.bayWidths), ...cornerGrid.shortRows.flatMap(() => cornerGrid.lengthBayWidths)];
+          assert.strictEqual(physicalSegments.filter(x => x > .600001).length, 40);
+          assert.strictEqual(physicalSegments.filter(x => x <= .600001).length, 45);
+          const teeCuts = cornerApi.optimizeCrossTeeCutsByRoom([{name:'Room 1',cuts:[.8,.3]}], 1.2, .003, .1, 2);
+          assert.strictEqual(teeCuts.stocks, 1);
+          assert.deepStrictEqual(teeCuts.rooms[0].bars[0].cuts, [.8,.3]);
+          assert.strictEqual(teeCuts.rooms[0].bars[0].piecesUsed, 2);
+          assert(Math.abs(teeCuts.scrap - .094) < 1e-8);
+          console.log('Geometry, cross-tee classification, two-piece limit and offcut-reuse smoke tests passed');
           JS
 
       - name: Prepare persistent Android release signing key
@@ -127,7 +137,7 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build signed APK from updated V11 source project
+      - name: Build signed APK from updated V12 source project
         shell: bash
         env:
           PROJECT_DIR: ${{ steps.project.outputs.project_dir }}
@@ -152,12 +162,12 @@ jobs:
             exit 1
           fi
           mkdir -p output
-          cp "$APK" output/Armstrong_Ceiling_Calculator_v11.apk
-          ls -lh output/Armstrong_Ceiling_Calculator_v11.apk
+          cp "$APK" output/Armstrong_Ceiling_Calculator_v12.apk
+          ls -lh output/Armstrong_Ceiling_Calculator_v12.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Armstrong-Ceiling-Calculator-v11-APK
-          path: output/Armstrong_Ceiling_Calculator_v11.apk
+          name: Armstrong-Ceiling-Calculator-v12-APK
+          path: output/Armstrong_Ceiling_Calculator_v12.apk
           if-no-files-found: error
